@@ -7,8 +7,8 @@ Sign up to present or lead one methods research meeting (Fridays, 11:00–12:00,
 | Date | Presenter |
 |------|-----------|
 | 09/18 | OPEN |
-| 10/02 | OPEN |
+| 10/02 | Connor Stitt |
 | 10/16 | OPEN |
 | 10/30 | OPEN |
-| 11/13 | OPEN |
-| 12/11 | OPEN |
+| 11/13 | Emily Wang |
+| 12/11 | Jack |
