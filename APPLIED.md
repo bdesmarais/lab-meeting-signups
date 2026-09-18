@@ -2,7 +2,7 @@
 
 Sign up to present or lead one applied research meeting (Tuesdays, 2:00–3:00, Huddle room 432). One slot per meeting; first come, first served.
 
-**To claim a slot:** use the sign-up page at **https://brucedesmarais.com/labsignup/?m=applied** — no account needed. Pick a date, enter your name, and submit; your claim is timestamped when you submit, shows as pending immediately, and lands on this sheet within about ten minutes. (If you have a GitHub account, the [issue claim form](../../issues/new?template=claim-applied.yml) also works.)
+**To claim a slot:** use the sign-up page at **https://brucedesmarais.com/labsignup-applied/** — no account needed. Pick a date, enter your name, and submit; your claim is timestamped when you submit, shows as pending immediately, and lands on this sheet within about ten minutes. (If you have a GitHub account, the [issue claim form](../../issues/new?template=claim-applied.yml) also works.)
 
 | Date | Presenter |
 |------|-----------|
