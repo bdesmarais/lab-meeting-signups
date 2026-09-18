@@ -1,0 +1,26 @@
+name: Claim a Methods research meeting slot
+description: Sign up to present or lead a Methods research meeting
+title: "Methods research meeting claim"
+labels: [claim-methods]
+body:
+  - type: dropdown
+    id: week
+    attributes:
+      label: Date
+      description: Pick the meeting date you want
+      options:
+        - "09/18"
+        - "10/02"
+        - "10/16"
+        - "10/30"
+        - "11/13"
+        - "12/11"
+    validations:
+      required: true
+  - type: input
+    id: name
+    attributes:
+      label: Your name
+      description: As it should appear on the sign-up sheet
+    validations:
+      required: true

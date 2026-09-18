@@ -1,0 +1,65 @@
+name: Process slot claim
+on:
+  issues:
+    types: [opened]
+permissions:
+  contents: write
+  issues: write
+jobs:
+  claim:
+    if: contains(github.event.issue.labels.*.name, 'claim-methods') || contains(github.event.issue.labels.*.name, 'claim-applied')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply claim
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const { execSync } = require('child_process');
+            const isMethods = context.payload.issue.labels.some(l => l.name === 'claim-methods');
+            const file = isMethods ? 'METHODS.md' : 'APPLIED.md';
+            const kind = isMethods ? 'methods' : 'applied';
+            const body = context.payload.issue.body || '';
+            const weekMatch = body.match(/### Date\s*\n\s*\n?(.+)/);
+            const nameMatch = body.match(/### Your name\s*\n\s*\n?(.+)/);
+            const close = async (msg) => {
+              await github.rest.issues.createComment({...context.repo, issue_number: context.issue.number, body: msg});
+              await github.rest.issues.update({...context.repo, issue_number: context.issue.number, state: 'closed'});
+            };
+            if (!weekMatch || !nameMatch) { await close('Could not parse the form; please use the claim template.'); return; }
+            const week = weekMatch[1].trim();
+            const name = nameMatch[1].trim().replace(/\|/g, '/');
+            const m = week.match(/^(\d\d\/\d\d)/);
+            if (!m) { await close('Unrecognized date format; please re-submit using the dropdown.'); return; }
+            const date = m[1];
+            const entry = `${name} (@${context.payload.issue.user.login})`;
+            execSync('git config user.name "signup-bot" && git config user.email "41898282+github-actions[bot]@users.noreply.github.com"');
+            let claimed = null, full = false, found = false;
+            for (let attempt = 1; attempt <= 6; attempt++) {
+              execSync('git fetch origin main && git reset --hard origin/main');
+              claimed = null; full = false; found = false;
+              const lines = fs.readFileSync(file, 'utf8').split('\n');
+              for (let i = 0; i < lines.length; i++) {
+                if (!lines[i].startsWith(`| ${date} `)) continue;
+                found = true;
+                const cells = lines[i].split('|');
+                if (cells[2].trim() === 'OPEN') { cells[2] = ` ${entry} `; claimed = true; }
+                else { full = true; break; }
+                lines[i] = cells.join('|');
+                break;
+              }
+              if (!found || full) break;
+              fs.writeFileSync(file, lines.join('\n'));
+              execSync(`git add ${file}`);
+              execSync(`git commit -m "Claim: ${week} (${kind}) -> ${name}"`);
+              try { execSync('git push origin main'); break; }
+              catch (e) {
+                claimed = null;
+                if (attempt === 6) { await close('The sheet is very busy right now; please re-submit your claim in a minute.'); return; }
+                execSync(`sleep ${attempt}`);
+              }
+            }
+            if (!found)  { await close('Could not find that date in the sheet; please contact Bruce.'); return; }
+            if (full)    { await close(`Sorry — the slot for **${week}** is already taken. Please open a new claim for another date.`); return; }
+            if (claimed) { await close(`Confirmed: **${week}** is yours, ${name}. See the updated sheet in ${file}.`); }

@@ -1,0 +1,28 @@
+name: Process web sign-up queue
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply queued claims
+        run: |
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main && git reset --hard origin/main
+            out=$(python3 scripts/process_queue.py)
+            echo "$out"
+            if ! echo "$out" | grep -q "^CHANGED$"; then exit 0; fi
+            git config user.name "signup-bot"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add METHODS.md APPLIED.md processed.json
+            git diff --cached --quiet && exit 0
+            git commit -m "Apply web sign-up queue"
+            if git push origin main; then exit 0; fi
+            sleep $attempt
+          done
+          exit 1
