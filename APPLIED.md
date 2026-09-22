@@ -7,8 +7,8 @@ Sign up to present or lead one applied research meeting (Tuesdays, 2:00–3:00, 
 | Date | Presenter |
 |------|-----------|
 | 09/22 | OPEN |
-| 10/06 | OPEN |
-| 10/20 | OPEN |
-| 11/03 | OPEN |
+| 10/06 | Cassandra Tai |
+| 10/20 | Nick Hemauer |
+| 11/03 | Jody Park |
 | 11/17 | OPEN |
-| 12/01 | OPEN |
+| 12/01 | Cecilia |
