@@ -6,14 +6,31 @@ Claims are applied in strict arrival order (ntfy server time, then message id);
 processed.json records handled ids so replays are impossible. A person who
 already holds a slot on a sheet is skipped (absorbs double-clicks).
 """
-import json, re, urllib.request
+import json, re, time, urllib.error, urllib.request
 
 TOPIC = "https://ntfy.sh/lab-signups-f82be3e70c4343e1"
 SHEETS = {"methods": "METHODS.md", "applied": "APPLIED.md"}
 
+def fetch_queue(tries=4):
+    """Read the ntfy topic, retrying transient network errors (GitHub runners
+    sometimes get "Network is unreachable" for a few seconds). Returns None if
+    ntfy stays unreachable, so the run ends quietly and the next scheduled run
+    picks the claims up; ntfy keeps them for 12 hours."""
+    for attempt in range(tries):
+        try:
+            with urllib.request.urlopen(TOPIC + "/json?poll=1&since=all", timeout=30) as r:
+                return r.read().decode().split("\n")
+        except (urllib.error.URLError, OSError) as e:
+            err = e
+            time.sleep(5 * 2 ** attempt)
+    print(f"::warning::ntfy unreachable after {tries} tries ({err}); leaving the queue for the next run")
+    return None
+
 def main():
-    with urllib.request.urlopen(TOPIC + "/json?poll=1&since=all", timeout=30) as r:
-        lines = r.read().decode().split("\n")
+    lines = fetch_queue()
+    if lines is None:
+        print("NOCHANGE")
+        return
     done = set(json.load(open("processed.json"))["processed"])
     claims = []
     for line in lines:
